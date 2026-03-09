@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台北富邦 - 優惠與消費紀錄</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #FFF3E0; color: #4E342E; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px;}
+        header { background-color: #FF9800; width: 100%; padding: 15px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100;}
+        h1 { margin: 0; font-size: 20px; text-align: center; flex-grow: 1;}
+        .back-btn { background-color: transparent; color: white; border: 2px solid white; padding: 5px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px;}
+        .back-btn:hover { background-color: white; color: #FF9800; }
+        .container { margin-top: 20px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(255, 152, 0, 0.15); width: 85%; max-width: 600px; display: flex; flex-direction: column; gap: 20px;}
+        .section-title { color: #E65100; font-size: 18px; margin-bottom: 10px; text-align: center; border-bottom: 2px dashed #FFE0B2; padding-bottom: 10px;}
+        .promo-section { text-align: center; }
+        .update-pic-btn { background-color: #FFB74D; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 14px; width: 100%;}
+        .promo-image { max-width: 100%; border-radius: 8px; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 10px;}
+        .spending-section { background-color: #FFF8E1; padding: 20px; border-radius: 12px;}
+        .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 16px; font-weight: bold; color: #6D4C41; }
+        .highlight-row { border-top: 1px solid #FFE0B2; padding-top: 12px; font-size: 18px; color: #2E7D32; }
+        .over-limit { color: #D32F2F !important; }
+        .small-btn { background-color: #FFB74D; color: white; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold;}
+        .total-amount-text { color: #D84315; font-size: 20px;}
+        .action-buttons { display: flex; gap: 8px; justify-content: space-between; margin-top: 15px; flex-wrap: wrap;}
+        .action-buttons button { border: none; padding: 10px 0; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; min-width: 30%; font-size: 14px; color: white;}
+        .add-btn { background-color: #4CAF50; }
+        .undo-btn { background-color: #FF9800; }
+        .reset-btn { background-color: #F44336; }
+        .timeline-section { margin-top: 10px; }
+        .timeline { list-style: none; padding: 0; margin: 0; }
+        .timeline-item { display: flex; justify-content: space-between; background: #FFF3E0; padding: 12px; margin-bottom: 8px; border-radius: 8px; border-left: 4px solid #FF9800; font-size: 15px;}
+        .timeline-time { color: #8D6E63; font-size: 13px; }
+        .timeline-amt { font-weight: bold; color: #E65100; }
+        .empty-text { text-align: center; color: #BCAAA4; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <header>
+        <button class="back-btn" onclick="window.location.href='index.html'">返回</button>
+        <h1>台北富邦</h1>
+        <div style="width: 50px;"></div>
+    </header>
+
+    <div class="container">
+        <div class="promo-section">
+            <h2 class="section-title">🌟 目前優惠活動</h2>
+            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+            <button class="update-pic-btn" onclick="document.getElementById('imageInput').click()">上傳 / 更新優惠截圖</button>
+            <img id="promoImage" class="promo-image" alt="優惠圖片">
+        </div>
+
+        <div class="spending-section">
+            <h2 class="section-title" id="monthTitle">月消費統計</h2>
+            <div class="info-row">
+                <span>🎯 消費上限：NT$ <span id="limitText">0</span></span>
+                <button class="small-btn" id="set-limit-btn">設定上限</button>
+            </div>
+            <div class="info-row">
+                <span>💸 目前已消費：<span class="total-amount-text">NT$ <span id="totalText">0</span></span></span>
+            </div>
+            <div class="info-row highlight-row" id="remainingRow">
+                <span>✨ 還可消費：NT$ <span id="remainingText">0</span></span>
+            </div>
+
+            <div class="action-buttons">
+                <button class="add-btn" id="add-btn">➕ 新增</button>
+                <button class="undo-btn" id="undo-btn">↩️ Undo</button>
+                <button class="reset-btn" id="reset-btn">🔄 歸0全部</button>
+            </div>
+        </div>
+
+        <div class="timeline-section">
+            <h2 class="section-title">⏱️ 消費紀錄</h2>
+            <ul class="timeline" id="timelineList">
+                <li class="empty-text">尚無消費紀錄</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvdVrgSO-egLZ-WiHZKUlP6hRX_vp4iKQ",
+            authDomain: "creditcard-reward.firebaseapp.com",
+            projectId: "creditcard-reward",
+            storageBucket: "creditcard-reward.firebasestorage.app",
+            messagingSenderId: "167754299204",
+            appId: "1:167754299204:web:68ac33101827ba7aa24911"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let totalSpent = 0;
+        let spendingLimit = 0; 
+        let timelineData = [];
+
+        const monthTitle = document.getElementById('monthTitle');
+        const limitText = document.getElementById('limitText');
+        const totalText = document.getElementById('totalText');
+        const remainingText = document.getElementById('remainingText');
+        const remainingRow = document.getElementById('remainingRow');
+        const timelineList = document.getElementById('timelineList');
+        
+        const setLimitBtn = document.getElementById('set-limit-btn');
+        const addBtn = document.getElementById('add-btn');
+        const undoBtn = document.getElementById('undo-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const imageInput = document.getElementById('imageInput');
+        const promoImage = document.getElementById('promoImage');
+
+        const currentMonth = new Date().getMonth() + 1;
+        monthTitle.textContent = `${currentMonth}月消費統計`;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadData();
+            } else {
+                alert("請先登入！即將為您返回首頁。");
+                window.location.href = "index.html";
+            }
+        });
+
+        // 修改資料庫路徑為 fubon
+        async function loadData() {
+            const docRef = doc(db, "users", currentUser.uid, "banks", "fubon");
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                totalSpent = data.totalSpent || 0;
+                spendingLimit = data.spendingLimit || 0;
+                timelineData = data.timeline || [];
+            }
+            updateUI();
+        }
+
+        // 修改資料庫路徑為 fubon
+        async function saveData() {
+            if (!currentUser) return;
+            const docRef = doc(db, "users", currentUser.uid, "banks", "fubon");
+            await setDoc(docRef, {
+                totalSpent: totalSpent,
+                spendingLimit: spendingLimit,
+                timeline: timelineData
+            }, { merge: true });
+        }
+
+        function updateUI() {
+            limitText.textContent = spendingLimit.toLocaleString();
+            totalText.textContent = totalSpent.toLocaleString();
+            const remaining = spendingLimit - totalSpent;
+            remainingText.textContent = remaining.toLocaleString();
+            
+            if (remaining < 0) {
+                remainingRow.classList.add('over-limit');
+            } else {
+                remainingRow.classList.remove('over-limit');
+            }
+            
+            timelineList.innerHTML = '';
+            if (timelineData.length === 0) {
+                timelineList.innerHTML = '<li class="empty-text">尚無消費紀錄</li>';
+            } else {
+                timelineData.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'timeline-item';
+                    li.innerHTML = `
+                        <span class="timeline-time">${item.time}</span>
+                        <span class="timeline-amt">+ NT$ ${item.amount.toLocaleString()}</span>
+                    `;
+                    timelineList.appendChild(li);
+                });
+            }
+        }
+
+        setLimitBtn.addEventListener('click', async () => {
+            const limitStr = prompt("請輸入您的消費上限金額：", spendingLimit);
+            if (limitStr !== null && limitStr.trim() !== "") {
+                const limit = parseInt(limitStr);
+                if (!isNaN(limit) && limit >= 0) {
+                    spendingLimit = limit;
+                    updateUI();
+                    await saveData();
+                } else {
+                    alert("請輸入有效的數字！");
+                }
+            }
+        });
+
+        addBtn.addEventListener('click', async () => {
+            const amountStr = prompt("請輸入此筆消費金額：");
+            const amount = parseInt(amountStr);
+            
+            if (!isNaN(amount) && amount > 0) {
+                totalSpent += amount;
+                const now = new Date();
+                const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                timelineData.unshift({ time: timeString, amount: amount });
+                updateUI();
+                await saveData();
+            } else if (amountStr !== null) {
+                alert("請輸入有效的數字！");
+            }
+        });
+
+        undoBtn.addEventListener('click', async () => {
+            if (timelineData.length === 0) {
+                alert("目前沒有紀錄可以復原喔！");
+                return;
+            }
+            const lastRecord = timelineData.shift(); 
+            totalSpent -= lastRecord.amount;
+            if (totalSpent < 0) totalSpent = 0; 
+            updateUI();
+            await saveData();
+        });
+
+        resetBtn.addEventListener('click', async () => {
+            const confirmReset = confirm("確定要清空「全部消費紀錄」嗎？\n(注意：此動作無法復原，但不會影響您設定的消費上限)");
+            if (confirmReset) {
+                totalSpent = 0;
+                timelineData = [];
+                updateUI();
+                await saveData();
+            }
+        });
+
+        // 圖片儲存名稱改為 fubon_promo_image
+        const savedImage = localStorage.getItem('fubon_promo_image');
+        if (savedImage) {
+            promoImage.src = savedImage;
+            promoImage.style.display = 'block';
+        }
+
+        imageInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Image = e.target.result;
+                    promoImage.src = base64Image;
+                    promoImage.style.display = 'block';
+                    localStorage.setItem('fubon_promo_image', base64Image);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
