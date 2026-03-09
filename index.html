@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>刷卡優惠計算</title>
+    <style>
+        /* 橘色暖色系主題設計 */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #FFF3E0; color: #4E342E; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
+        header { background-color: #FF9800; width: 100%; padding: 15px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 10px; }
+        h1 { margin: 0; font-size: 20px; }
+        
+        /* 帳密登入區塊樣式 */
+        .auth-container { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .auth-input { padding: 6px 10px; border: none; border-radius: 15px; outline: none; font-size: 14px; width: 130px; }
+        button { background-color: white; color: #E65100; border: none; padding: 6px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s; }
+        button:hover { background-color: #FFE0B2; }
+        
+        .container { margin-top: 30px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(255, 152, 0, 0.15); width: 85%; max-width: 600px; }
+        .input-section { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px dashed #FFE0B2; }
+        .input-section h2 { color: #E65100; font-size: 20px; }
+        .amount-input { padding: 10px; font-size: 16px; border: 2px solid #FFB74D; border-radius: 8px; width: 70%; margin-top: 10px; outline: none; text-align: center; }
+        .menu-section h3 { text-align: center; color: #E65100; font-size: 18px; }
+        .menu { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .menu a { text-decoration: none; background-color: #FFB74D; color: white; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; transition: all 0.3s ease; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>刷卡優惠計算</h1>
+        
+        <div class="auth-container" id="login-section">
+            <input type="email" id="email" class="auth-input" placeholder="信箱 (例如: kutar...)">
+            <input type="password" id="password" class="auth-input" placeholder="密碼">
+            <button id="login-btn">登入</button>
+            <button id="register-btn">註冊</button>
+        </div>
+
+        <div class="auth-container" id="user-info" style="display: none;">
+            <span id="user-email-text" style="font-size: 14px;"></span>
+            <button id="logout-btn">登出</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="input-section">
+            <h2>💰 刷卡總額</h2>
+            <input type="number" id="totalAmount" class="amount-input" placeholder="請輸入預計刷卡金額 (元)">
+        </div>
+
+        <div class="menu-section">
+            <h3>🏦 選擇銀行查看優惠</h3>
+            <div class="menu">
+                <a href="feib.html">遠東銀行</a>
+                <a href="fubon.html">台北富邦</a>
+                <a href="taishin.html">台新銀行</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
+
+        // 你的專屬 Firebase 設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvdVrgSO-egLZ-WiHZKUlP6hRX_vp4iKQ",
+            authDomain: "creditcard-reward.firebaseapp.com",
+            projectId: "creditcard-reward",
+            storageBucket: "creditcard-reward.firebasestorage.app",
+            messagingSenderId: "167754299204",
+            appId: "1:167754299204:web:68ac33101827ba7aa24911",
+            measurementId: "G-JTKS467BR1"
+        };
+
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // 取得 UI 元素
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        const loginSection = document.getElementById('login-section');
+        const userInfo = document.getElementById('user-info');
+        const userEmailText = document.getElementById('user-email-text');
+
+        // 註冊功能
+        registerBtn.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            if(!email || !password) return alert("請輸入信箱與密碼！");
+            
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("註冊成功！已經為您自動登入。");
+                })
+                .catch((error) => {
+                    alert("註冊失敗：" + error.message);
+                });
+        });
+
+        // 登入功能
+        loginBtn.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            if(!email || !password) return alert("請輸入信箱與密碼！");
+
+            signInWithEmailAndPassword(auth, email, password)
+                .catch((error) => {
+                    alert("登入失敗，請檢查帳號密碼是否正確！");
+                });
+        });
+
+        // 登出功能
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // 監聽登入狀態
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // 已登入
+                loginSection.style.display = 'none';
+                userInfo.style.display = 'flex';
+                userEmailText.textContent = `Hi, ${user.email} `;
+                // 清空輸入框
+                emailInput.value = '';
+                passwordInput.value = '';
+            } else {
+                // 未登入
+                loginSection.style.display = 'flex';
+                userInfo.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
