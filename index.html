@@ -3,80 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>遠東銀行 - 優惠與消費紀錄</title>
+    <title>刷卡優惠計算</title>
     <style>
-        /* 延續暖橘色系主題 */
-        body { font-family: 'Segoe UI', sans-serif; background-color: #FFF3E0; color: #4E342E; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px;}
-        header { background-color: #FF9800; width: 100%; padding: 15px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100;}
-        h1 { margin: 0; font-size: 20px; text-align: center; flex-grow: 1;}
+        /* 橘色暖色系主題設計 */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #FFF3E0; color: #4E342E; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
+        header { background-color: #FF9800; width: 100%; padding: 15px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 10px; }
+        h1 { margin: 0; font-size: 20px; }
         
-        .back-btn { background-color: transparent; color: white; border: 2px solid white; padding: 5px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 14px;}
-        .back-btn:hover { background-color: white; color: #FF9800; }
-
-        .container { margin-top: 20px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(255, 152, 0, 0.15); width: 85%; max-width: 600px; display: flex; flex-direction: column; gap: 20px;}
-
-        /* 區塊標題 */
-        .section-title { color: #E65100; font-size: 18px; margin-bottom: 10px; text-align: center; border-bottom: 2px dashed #FFE0B2; padding-bottom: 10px;}
-
-        /* 圖片上傳區塊 */
-        .promo-section { text-align: center; }
-        .update-pic-btn { background-color: #FFB74D; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 14px; width: 100%;}
-        .promo-image { max-width: 100%; border-radius: 8px; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 10px;}
-
-        /* 消費區塊 */
-        .spending-section { text-align: center; background-color: #FFF8E1; padding: 20px; border-radius: 12px;}
-        .total-amount { font-size: 32px; font-weight: bold; color: #D84315; margin: 15px 0; }
-        .action-buttons { display: flex; gap: 10px; justify-content: center; }
-        .add-btn { background-color: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1;}
-        .reset-btn { background-color: #F44336; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1;}
-
-        /* 時間軸區塊 */
-        .timeline-section { margin-top: 10px; }
-        .timeline { list-style: none; padding: 0; margin: 0; }
-        .timeline-item { display: flex; justify-content: space-between; background: #FFF3E0; padding: 12px; margin-bottom: 8px; border-radius: 8px; border-left: 4px solid #FF9800; font-size: 15px;}
-        .timeline-time { color: #8D6E63; font-size: 13px; }
-        .timeline-amt { font-weight: bold; color: #E65100; }
-        .empty-text { text-align: center; color: #BCAAA4; font-size: 14px; }
+        /* 帳密登入區塊樣式 */
+        .auth-container { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .auth-input { padding: 6px 10px; border: none; border-radius: 15px; outline: none; font-size: 14px; width: 130px; }
+        button { background-color: white; color: #E65100; border: none; padding: 6px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s; }
+        button:hover { background-color: #FFE0B2; }
+        
+        .container { margin-top: 30px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(255, 152, 0, 0.15); width: 85%; max-width: 600px; }
+        .input-section { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px dashed #FFE0B2; }
+        .input-section h2 { color: #E65100; font-size: 20px; }
+        .amount-input { padding: 10px; font-size: 16px; border: 2px solid #FFB74D; border-radius: 8px; width: 70%; margin-top: 10px; outline: none; text-align: center; }
+        .menu-section h3 { text-align: center; color: #E65100; font-size: 18px; }
+        .menu { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .menu a { text-decoration: none; background-color: #FFB74D; color: white; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; transition: all 0.3s ease; }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="index.html" class="back-btn">返回</a>
-        <h1>遠東銀行</h1>
-        <div style="width: 50px;"></div> </header>
+        <h1>刷卡優惠計算</h1>
+        
+        <div class="auth-container" id="login-section">
+            <input type="email" id="email" class="auth-input" placeholder="信箱 (例如: kutar...)">
+            <input type="password" id="password" class="auth-input" placeholder="密碼">
+            <button id="login-btn">登入</button>
+            <button id="register-btn">註冊</button>
+        </div>
+
+        <div class="auth-container" id="user-info" style="display: none;">
+            <span id="user-email-text" style="font-size: 14px;"></span>
+            <button id="logout-btn">登出</button>
+        </div>
+    </header>
 
     <div class="container">
-        
-        <div class="promo-section">
-            <h2 class="section-title">🌟 目前優惠活動</h2>
-            <input type="file" id="imageInput" accept="image/*" style="display: none;">
-            <button class="update-pic-btn" onclick="document.getElementById('imageInput').click()">上傳 / 更新優惠截圖</button>
-            <img id="promoImage" class="promo-image" alt="優惠圖片">
+        <div class="input-section">
+            <h2>💰 刷卡總額</h2>
+            <input type="number" id="totalAmount" class="amount-input" placeholder="請輸入預計刷卡金額 (元)">
         </div>
 
-        <div class="spending-section">
-            <h2 class="section-title" id="monthTitle">月目前已消費</h2>
-            <div class="total-amount">NT$ <span id="totalText">0</span></div>
-            <div class="action-buttons">
-                <button class="add-btn" id="add-btn">➕ 新增消費</button>
-                <button class="reset-btn" id="reset-btn">🔄 歸零今日</button>
+        <div class="menu-section">
+            <h3>🏦 選擇銀行查看優惠</h3>
+            <div class="menu">
+                <a href="feib.html">遠東銀行</a>
+                <a href="fubon.html">台北富邦</a>
+                <a href="taishin.html">台新銀行</a>
             </div>
         </div>
-
-        <div class="timeline-section">
-            <h2 class="section-title">⏱️ 消費紀錄</h2>
-            <ul class="timeline" id="timelineList">
-                <li class="empty-text">尚無消費紀錄</li>
-            </ul>
-        </div>
-
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
 
         // 你的專屬 Firebase 設定
         const firebaseConfig = {
@@ -85,138 +72,73 @@
             projectId: "creditcard-reward",
             storageBucket: "creditcard-reward.firebasestorage.app",
             messagingSenderId: "167754299204",
-            appId: "1:167754299204:web:68ac33101827ba7aa24911"
+            appId: "1:167754299204:web:68ac33101827ba7aa24911",
+            measurementId: "G-JTKS467BR1"
         };
 
+        // 初始化 Firebase
         const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let currentUser = null;
-        let totalSpent = 0;
-        let timelineData = [];
+        // 取得 UI 元素
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        const loginSection = document.getElementById('login-section');
+        const userInfo = document.getElementById('user-info');
+        const userEmailText = document.getElementById('user-email-text');
 
-        // UI 元素
-        const monthTitle = document.getElementById('monthTitle');
-        const totalText = document.getElementById('totalText');
-        const timelineList = document.getElementById('timelineList');
-        const addBtn = document.getElementById('add-btn');
-        const resetBtn = document.getElementById('reset-btn');
-        const imageInput = document.getElementById('imageInput');
-        const promoImage = document.getElementById('promoImage');
-
-        // 設定目前月份
-        const currentMonth = new Date().getMonth() + 1;
-        monthTitle.textContent = `${currentMonth}月目前已消費`;
-
-        // 檢查登入狀態
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                await loadData();
-            } else {
-                alert("請先登入！即將為您返回首頁。");
-                window.location.href = "index.html";
-            }
-        });
-
-        // 讀取 Firebase 中的消費紀錄
-        async function loadData() {
-            const docRef = doc(db, "users", currentUser.uid, "banks", "feib");
-            const docSnap = await getDoc(docRef);
+        // 註冊功能
+        registerBtn.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            if(!email || !password) return alert("請輸入信箱與密碼！");
             
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                totalSpent = data.totalSpent || 0;
-                timelineData = data.timeline || [];
-            }
-            updateUI();
-        }
-
-        // 儲存資料到 Firebase
-        async function saveData() {
-            if (!currentUser) return;
-            const docRef = doc(db, "users", currentUser.uid, "banks", "feib");
-            await setDoc(docRef, {
-                totalSpent: totalSpent,
-                timeline: timelineData
-            }, { merge: true });
-        }
-
-        // 更新畫面顯示
-        function updateUI() {
-            totalText.textContent = totalSpent.toLocaleString(); // 加上千位數逗號
-            
-            timelineList.innerHTML = '';
-            if (timelineData.length === 0) {
-                timelineList.innerHTML = '<li class="empty-text">尚無消費紀錄</li>';
-            } else {
-                timelineData.forEach(item => {
-                    const li = document.createElement('li');
-                    li.className = 'timeline-item';
-                    li.innerHTML = `
-                        <span class="timeline-time">${item.time}</span>
-                        <span class="timeline-amt">+ NT$ ${item.amount.toLocaleString()}</span>
-                    `;
-                    timelineList.appendChild(li);
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("註冊成功！已經為您自動登入。");
+                })
+                .catch((error) => {
+                    alert("註冊失敗：" + error.message);
                 });
-            }
-        }
-
-        // 新增消費
-        addBtn.addEventListener('click', async () => {
-            const amountStr = prompt("請輸入此筆消費金額：");
-            const amount = parseInt(amountStr);
-            
-            if (!isNaN(amount) && amount > 0) {
-                totalSpent += amount;
-                
-                // 取得現在時間 (時:分)
-                const now = new Date();
-                const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-                
-                // 加入時間軸最前面
-                timelineData.unshift({ time: timeString, amount: amount });
-                
-                updateUI();
-                await saveData(); // 存檔到 Firebase
-            } else if (amountStr !== null) {
-                alert("請輸入有效的數字！");
-            }
         });
 
-        // 歸零今日消費
-        resetBtn.addEventListener('click', async () => {
-            const confirmReset = confirm("確定要歸零所有紀錄嗎？");
-            if (confirmReset) {
-                totalSpent = 0;
-                timelineData = [];
-                updateUI();
-                await saveData(); // 存檔到 Firebase
-            }
+        // 登入功能
+        loginBtn.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            if(!email || !password) return alert("請輸入信箱與密碼！");
+
+            signInWithEmailAndPassword(auth, email, password)
+                .catch((error) => {
+                    alert("登入失敗，請檢查帳號密碼是否正確！");
+                });
         });
 
-        // ================= 圖片上傳功能 (LocalStorage) =================
-        // 讀取之前存的圖片
-        const savedImage = localStorage.getItem('feib_promo_image');
-        if (savedImage) {
-            promoImage.src = savedImage;
-            promoImage.style.display = 'block';
-        }
+        // 登出功能
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
 
-        // 監聽圖片選擇
-        imageInput.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const base64Image = e.target.result;
-                    promoImage.src = base64Image;
-                    promoImage.style.display = 'block';
-                    // 存入手機瀏覽器記憶體
-                    localStorage.setItem('feib_promo_image', base64Image);
-                };
-                reader.readAsDataURL(file);
+        // 監聽登入狀態
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // 已登入
+                loginSection.style.display = 'none';
+                userInfo.style.display = 'flex';
+                userEmailText.textContent = `Hi, ${user.email} `;
+                // 清空輸入框
+                emailInput.value = '';
+                passwordInput.value = '';
+            } else {
+                // 未登入
+                loginSection.style.display = 'flex';
+                userInfo.style.display = 'none';
             }
         });
     </script>
